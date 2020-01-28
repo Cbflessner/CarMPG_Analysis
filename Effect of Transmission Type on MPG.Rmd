@@ -8,30 +8,25 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Executive Summary
-Although, it initally looked as though manual cars had much higher MPG than automatic after regressing
-out car weight that relationship filped. However, the 0.95 regression coefficient given to manual cars in this
-model was not signficantly different from 1 at 5%, thus the results are inconclusive.
+Although, it initally looked as though manual cars had a much higher MPG than automatic after regressing
+out car weight and the number of gears in each car that relationship filped. However, the 0.93 exponentiated regression coefficient given to manual cars in this model was not signficantly different from 1 at a 5% confidence interval, thus the results are inconclusive.
 
 
 ## Data Prep
-The data was split for easier visualization and variables were converted to factors where appropriate. This resulted in a new data set called “cars”, which contains all variables and treats the discrete vairables as
-factors.
+The data was split for easier visualization and variables were converted to factors where appropriate. This resulted in a new data set called “cars”, which contains all variables and treats the discrete vairables as factors.
 
 ```{r data prep, message=FALSE}
 library(dplyr)
 library(ggplot2)
 library(GGally)
 cars_num<-mtcars%>%select(mpg, am, disp, hp, drat,wt,qsec)
-cars_fac1<-mtcars%>%select(mpg, am, cyl,vs)
-cars_fac2<-mtcars%>%select(mpg, am,gear,carb)
-cars_num$am<-factor(cars_num$am, labels=c("Auto","Manual"))
-cars_fac1$am<-factor(cars_fac1$am, labels=c("Auto","Manual"))
-cars_fac2$am<-factor(cars_fac1$am, labels=c("Auto","Manual"))
-cars_fac1$cyl<-factor(cars_fac1$cyl)
-cars_fac1$vs<-factor(cars_fac1$vs, labels=c("v","s"))
-cars_fac2$gear<-factor(cars_fac2$gear)
-cars_fac2$carb<-factor(cars_fac2$carb)
-cars<-cbind(cars_fac1,cars_fac2[,3:4],cars_num[,3:7])
+cars_fac<-mtcars%>%select(mpg, am, cyl,vs,gear,carb)
+cars_fac$am<-factor(cars_fac$am, labels=c("Auto","Manual"))
+cars_fac$cyl<-factor(cars_fac$cyl)
+cars_fac$vs<-factor(cars_fac$vs, labels=c("v","s"))
+cars_fac$gear<-factor(cars_fac$gear)
+cars_fac$carb<-factor(cars_fac$carb)
+cars<-cbind(cars_fac,cars_num[,3:7])
 ```
 
 ## Exploratory Analysis
@@ -39,30 +34,27 @@ cars<-cbind(cars_fac1,cars_fac2[,3:4],cars_num[,3:7])
 ### Numeric variables
 Figure 1 in the appendix shows that all numeric varibles have reasonably strong correlations with MPG.
 However, as seen in table 1 of the appendix, only 3 of these five have significantly different means when they
-are compared across transmission type. Of those 3 weight (wt) and engine displacment (disp) are very strongly correlated to each other (0.888) it makes sense that the size of the engine would have this sort of relationship with weight so both variables do not need to be included.  Consequently, engine displacement has been dropped in favor of car weight because the car weight is slighly more correlated with mpg.
+are compared across transmission type. Of those 3 weight (wt) and engine displacment (disp) are very strongly correlated to each other (0.888) it makes sense that the size of the engine would have this sort of relationship with weight so both variables do not need to be included.  Engine displacement has been dropped in favor of car weight because the car weight is slighly more correlated with mpg.  This leaves us with 2 numeric variables weight of the car (wt) and rear axel ratio (drat).
 
 
 ### Discrete Variables
-Looking at figure 2 in the appendix it is clear that the automatic cars tend to have more cylinders than
-manual (cyl) and that those cylinders tend to be arranged in a V instead of a straight line (vs). Cars with
-more cylinders and cylinders in a V shape both tend to have lower miles per gallon. Figure 3 also shows that
-automatic cars are almost exclusively 3 gear cars and that cars with 3 gears have the worst mpg performance.
+Looking at figure 2 in the appendix it is clear that the automatic cars are much more likely than manual to have only 3 gears (gear).  Cars with three gears seem to have significantly worse MPG so this might be a possible confounding variable.   The same figure also shows that automatic cars tend to have more cylinders than manual and that the number of cylinders a car has is inversly correlated with MPG.  However, the number of cylinders is also closely tied to the number of gears with almost all cars that have 8 cylinders having 3 gears, thus only one of these should probably be included.  Cars with their cylinders shaped in a V instead of a straight line also seems to get worse gas milage and those cars are also more likely to have automatic transmissions, but this again seems to be correlated to both the gear and cylinder number.  Finally, the number of carborators in a car seems to be inversly related to the MPG but that relationship isn't as strong as the others.  Thus, carborator amount will not be examined.  Cylinder number and configuration as well as the amount of gears in a car will all be examined but their heavy correlation to one another indicts that all will most likely not be present in the final model.
 
 
 ## Model Selection
-Consequently, only 5 varibles remain: weight of the car in 1,000 pounds (wt), rear axel ration (drat), number of cylinders in the engine (cyl), arrangement of those cylinders (vs), and the number of gears in the car (gear). Initially, results were derived with a Poisson transformation but upon completion it was noticed that the variance did not increase with lamda, but instead remained constant.  Thus a Quasipoisson model was used in its place.
-The significance of each of these varibles on the influence transmission type has on mpg can be examined using an Anova analysis with nested models which can be seen in tables 2-5 of the appendix.  The first analysis in Table 2 shows that both weight and the number of gears significantly influence the relationship between mpg and transmission type.  Table 3 shows that cylinder count can also explain additional variance on top of weight, and Table 4 shows that the same is true of the engine shape but neither of these explain quite as much as the number of gears.  Table 5 shows the rear axel ratio does not significantly explain any additional variance.
+Consequently, 5 varibles remain: weight of the car in 1,000 pounds (wt), rear axel ration (drat), number of cylinders in the engine (cyl), arrangement of those cylinders (vs), and the number of gears in the car (gear). Initially, results were derived with a Poisson transformation but upon completion it was noticed that the variance did not increase with lamda, but instead remained constant.  Thus a Quasipoisson model was used in its place.
+The significance of each of these varibles on the influence transmission type has on mpg can be examined using an Anova analysis with nested models which can be seen in tables 2-5 of the appendix.  The first analysis in Table 2 shows that both weight and the number of gears significantly influence the relationship between mpg and transmission type, but that after that no other predictors could be said to contribute.  Table 3 shows that cylinder count can also explain additional variance on top of weight, and Table 4 shows that the same is true of the engine shape but neither of these explain quite as much as the number of gears.  Table 5 shows the rear axel ratio does not significantly explain any additional variance.  Thus our final model indludes only the transmission type, wieght of the car and the number of gears that car has.
 
 ```{r fit, message=FALSE, warning=FALSE}
 fit<-glm(mpg~am+wt+gear,family="quasipoisson",data=cars)
 ```
 
 ## Residuals
- Figure 4 in the appendix shows that the reidudals are relatively constant throughout different predicted values which is alright because we are using the Quasipoisson transformation instead of a standard Poisson.
+ Figure 3 in the appendix shows that the reidudals are relatively constant throughout different predicted values which is alright because we are using the Quasipoisson transformation instead of a standard Poisson.
 
 ## Conclusion
 
-The most appropriate model appears to use only transmission type, the weight of the car, and the number of gears as the predictor variables. This model yields a coefficient of 0.92 suggesting that manual cars are slightly less fuel efficient than automatic once weight and the number of gears are held constant.
+The most appropriate model appears to use only transmission type, the weight of the car, and the number of gears as the predictor variables. This model yields a coefficient of 0.93 suggesting that manual cars are 7% less fuel efficient than automatic once weight and the number of gears are held constant.
 
 ```{r coef, message=FALSE, warning=FALSE}
 exp(coef(fit))
@@ -112,9 +104,9 @@ out
 fit1<-glm(mpg~am,family="quasipoisson",data=cars)
 fit2<-glm(mpg~am+wt,family="quasipoisson",data=cars)
 fit3<-glm(mpg~am+wt+gear,family="quasipoisson",data=cars)
-fit4<-glm(mpg~am+wt+gear+cyl,family="quasipoisson",data=cars)
-fit5<-glm(mpg~am+wt+gear+cyl+vs,family="quasipoisson",data=cars)
-fit6<-glm(mpg~am+wt+gear+cyl+vs+drat,family="quasipoisson",data=cars)
+fit4<-glm(mpg~am+wt+gear+vs,family="quasipoisson",data=cars)
+fit5<-glm(mpg~am+wt+gear+vs+cyl,family="quasipoisson",data=cars)
+fit6<-glm(mpg~am+wt+gear+vs+cyl+drat,family="quasipoisson",data=cars)
 anova(fit1,fit2,fit3,fit4,fit5,fit6, test="Chisq")
 ```
 
@@ -152,18 +144,12 @@ g
 ```
 
 ### Figrue 2
-```{r figure2, message=FALSE, warning=FALSE}
-g2=ggpairs(cars_fac1, lower = list(combo="blank",discrete="blank"), diag=list(continuous="densityDiag"))
+```{r figure2, message=FALSE, warning=FALSE, fig.width=10, fig.height=10 }
+g2=ggpairs(cars_fac, lower = list(combo="blank",discrete="blank"), diag=list(continuous="densityDiag"))
 g2
 ```
 
 ### Figrue 3
-```{r figure3, message=FALSE, warning=FALSE}
-g2=ggpairs(cars_fac2, lower = list(combo="blank",discrete="blank"), diag=list(continuous="densityDiag"))
-g2
-```
-
-### Figrue 4
 ```{r figure4, message=FALSE, warning=FALSE}
 plot(fit, which=1)
 ```
