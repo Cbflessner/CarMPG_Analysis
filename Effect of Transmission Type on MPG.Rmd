@@ -4,7 +4,7 @@ output: html_document
 ---
 /***************************************************************
 DRAFT
-  See model selection section- test change
+  See model selection section
 ****************************************************************/
 
 ```{r setup, include=FALSE}
