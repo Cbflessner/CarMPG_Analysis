@@ -2,14 +2,17 @@
 title: "Effect of Transmission Type on MPG"
 output: html_document
 ---
+/***************************************************************
+DRAFT
+  See model selection section- test change
+****************************************************************/
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Executive Summary
-Although, it initally looked as though manual cars had a much higher MPG than automatic after regressing
-out car weight and the number of gears in each car that relationship filped. However, the 0.93 exponentiated regression coefficient given to manual cars in this model was not signficantly different from 1 at a 5% confidence interval, thus the results are inconclusive.
+This project sought to discover if manual or automatic cars has better gas milage based on the mtcars dataset that comes with R.  Although, it initally looked as though manual cars had a much higher MPG than automatic, after regressing out car weight and the number of gears in each car that relationship filpped. However, the 0.93 exponentiated regression coefficient given to manual cars in this model was not signficantly different from 1 at a 5% confidence interval, thus the results are inconclusive.
 
 
 ## Data Prep
@@ -43,14 +46,16 @@ Looking at figure 2 in the appendix it is clear that the automatic cars are much
 
 ## Model Selection
 Consequently, 5 varibles remain: weight of the car in 1,000 pounds (wt), rear axel ration (drat), number of cylinders in the engine (cyl), arrangement of those cylinders (vs), and the number of gears in the car (gear). Initially, results were derived with a Poisson transformation but upon completion it was noticed that the variance did not increase with lamda, but instead remained constant.  Thus a Quasipoisson model was used in its place.
-The significance of each of these varibles on the influence transmission type has on mpg can be examined using an Anova analysis with nested models which can be seen in tables 2-5 of the appendix.  The first analysis in Table 2 shows that both weight and the number of gears significantly influence the relationship between mpg and transmission type, but that after that no other predictors could be said to contribute.  Table 3 shows that cylinder count can also explain additional variance on top of weight, and Table 4 shows that the same is true of the engine shape but neither of these explain quite as much as the number of gears.  Table 5 shows the rear axel ratio does not significantly explain any additional variance.  Thus our final model indludes only the transmission type, wieght of the car and the number of gears that car has.
+The significance of each of these varibles on the influence transmission type has on mpg can be examined using an Anova analysis with nested models which can be seen in tables 2-5 of the appendix.  The first analysis in Table 2 shows that both weight and the number of gears significantly influence the relationship between mpg and transmission type, but that after that no other predictors could be said to contribute.  Table 3 shows that cylinder count can also explain additional variance on top of weight, and Table 4 shows that the same is true of the engine shape but neither of these explain quite as much as the number of gears.  Table 5 shows the rear axel ratio does not significantly explain any additional variance.  Thus our final model includes only the transmission type, wieght of the car and the number of gears that car has.
+
+*********************************more on how model was chosen and validated*******************************
 
 ```{r fit, message=FALSE, warning=FALSE}
 fit<-glm(mpg~am+wt+gear,family="quasipoisson",data=cars)
 ```
 
 ## Residuals
- Figure 3 in the appendix shows that the reidudals are relatively constant throughout different predicted values which is alright because we are using the Quasipoisson transformation instead of a standard Poisson.
+ Figure 3 in the appendix shows that the residuals are relatively constant throughout different predicted values this is acceptable because we are using the Quasipoisson transformation instead of a standard Poisson.
 
 ## Conclusion
 
